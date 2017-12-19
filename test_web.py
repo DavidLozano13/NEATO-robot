@@ -7,6 +7,7 @@ from multiprocessing import Process, Queue
 import http_viewer
 import math
 import random
+import matplotlib.pyplot as plt
 
 ###################### !!! W A R N I N G !!! ########################
 # Each group working in the same robot has to chose a different port.
@@ -21,7 +22,7 @@ def set(message, timeInMs):
     #print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
     ser.write(message+'\r'+'\n');
     time.sleep(abs(timeInMs/1000));
-        
+
 def get(message):
     #print "GET - Message: %s" %message;
     ser.write(message+'\r'+'\n');
@@ -29,7 +30,7 @@ def get(message):
 def getLDS():
     set('SetLDSRotation On', 1500);
     get('GetLDSScan');
-    
+
     LDS_data = [];
     while ser.inWaiting()>0:
         line = ser.readline();
@@ -38,9 +39,9 @@ def getLDS():
             #Array ['AngleInDegrees', 'DistInMM', 'errorCode']
             line_content = [line_split[0], line_split[1], line_split[3]];
             LDS_data.append(line_content);
-    
+
     set('SetLDSRotation Off', 100);
-   
+
     return LDS_data;
 
 
@@ -78,6 +79,7 @@ def getLaserValues():
 	res[9] = values[324]
 
 	for i in range(0,359):
+        plt.scatter(i, values[i])
 		if i >= 0 and i <= 35:
 			# Zona izquierda
 			if values[i] < res[0] and values[i] != 0:
@@ -119,7 +121,7 @@ def getLaserValues():
 			if values[i] < res[9] and values[i] != 0:
 				res[9] = values[i]
 
-	
+
 
 	resfinal = [res[2], res[1], res[0], res[9], res[8]]
 	print(resfinal)
