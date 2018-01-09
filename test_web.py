@@ -67,61 +67,52 @@ def getLaserValues():
 			values[int(value[0])] = int(value[1])
 	# Coger 5 posiciones: 0-36, 37-72, 73-108, 109-144, 145-180
 	# Init
-	res[0] = values[0]
-	res[1] = values[36]
-	res[2] = values[72]
-	res[3] = values[108]
-	res[4] = values[144]
-	res[5] = values[180]
-	res[6] = values[216]
-	res[7] = values[252]
-	res[8] = values[288]
-	res[9] = values[324]
+	res[0] = 0
+	res[1] = 0
+	res[2] = 0
+	res[3] = 0
+	res[4] = 0
+	res[5] = 0
+	res[6] = 0
+	res[7] = 0
+	res[8] = 0
+	res[9] = 0
 
 	for i in range(0,359):
         plt.scatter(i, values[i])
 		if i >= 0 and i <= 35:
 			# Zona izquierda
-			if values[i] < res[0] and values[i] != 0:
-				res[0] = values[i]
+			res[0] += values[i]
 		if i >= 36 and i <= 71:
 			# Zona izquierda central
-			if values[i] < res[1] and values[i] != 0:
-				res[1] = values[i]
+			res[1] += values[i]
 		if i >= 72 and i <= 107:
 			# Zona central
-			if values[i] < res[2] and values[i] != 0:
-				res[2] = values[i]
+			res[2] += values[i]
 		if i >= 108 and i <= 143:
 			# Zona derecha central
-			if values[i] < res[3] and values[i] != 0:
-				res[3] = values[i]
+			res[3] += values[i]
 		if i >= 144 and i <= 179:
 			# Zona derecha
-			if values[i] < res[4] and values[i] != 0:
-				res[4] = values[i]
+			res[4] += values[i]
 		if i >= 180 and i <= 215:
 			# Zona izquierda
-			if values[i] < res[5] and values[i] != 0:
-				res[5] = values[i]
+			res[5] += values[i]
 		if i >= 216 and i <= 251:
 			# Zona izquierda central
-			if values[i] < res[6] and values[i] != 0:
-				res[6] = values[i]
+			res[6] += values[i]
 		if i >= 252 and i <= 287:
 			# Zona central
-			if values[i] < res[7] and values[i] != 0:
-				res[7] = values[i]
+			res[7] += values[i]
 		if i >= 288 and i <= 323:
 			# Zona derecha central
-			if values[i] < res[8] and values[i] != 0:
-				res[8] = values[i]
+			res[8] += values[i]
 		if i >= 324 and i <= 359:
 			# Zona derecha
-			if values[i] < res[9] and values[i] != 0:
-				res[9] = values[i]
+			res[9] += values[i]
 
-
+	for i in range(0, 9)
+		res[i] = res[i]/36
 
 	resfinal = [res[2], res[1], res[0], res[9], res[8]]
 	print(resfinal)
