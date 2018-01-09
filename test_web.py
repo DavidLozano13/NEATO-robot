@@ -77,40 +77,42 @@ def getLaserValues():
 	res[8] = 0
 	res[9] = 0
 
+	global prova
+	prova = 30
 	for i in range(0,359):
-		if i >= 0 and i <= 35:
+		if i >= 0 and i <= (35-prova):
 			# Zona izquierda
 			res[0] += values[i]
-		if i >= 36 and i <= 71:
+		if i >= 36 and i <= (71-prova):
 			# Zona izquierda central
 			res[1] += values[i]
-		if i >= 72 and i <= 107:
+		if i >= 72 and i <= (107-prova):
 			# Zona central
 			res[2] += values[i]
-		if i >= 108 and i <= 143:
+		if i >= 108 and i <= (143-prova):
 			# Zona derecha central
 			res[3] += values[i]
-		if i >= 144 and i <= 179:
+		if i >= 144 and i <= (179-prova):
 			# Zona derecha
 			res[4] += values[i]
-		if i >= 180 and i <= 215:
+		if i >= 180 and i <= (215-prova):
 			# Zona izquierda
 			res[5] += values[i]
-		if i >= 216 and i <= 251:
+		if i >= 216 and i <= (251-prova):
 			# Zona izquierda central
 			res[6] += values[i]
-		if i >= 252 and i <= 287:
+		if i >= 252 and i <= (287-prova):
 			# Zona central
 			res[7] += values[i]
-		if i >= 288 and i <= 323:
+		if i >= 288 and i <= (323-prova):
 			# Zona derecha central
 			res[8] += values[i]
-		if i >= 324 and i <= 359:
+		if i >= 324 and i <= (359-prova):
 			# Zona derecha
 			res[9] += values[i]
 
-	for i in range(0,9):
-		res[i] = res[i]/36
+	for i in range(0, 9):
+		res[i] = res[i]/(36-prova)
 
 	resfinal = [res[2], res[1], res[0], res[9], res[8]]
 	print(resfinal)
