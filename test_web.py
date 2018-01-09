@@ -7,7 +7,6 @@ from multiprocessing import Process, Queue
 import http_viewer
 import math
 import random
-import matplotlib.pyplot as plt
 
 ###################### !!! W A R N I N G !!! ########################
 # Each group working in the same robot has to chose a different port.
@@ -79,7 +78,6 @@ def getLaserValues():
 	res[9] = 0
 
 	for i in range(0,359):
-        plt.scatter(i, values[i])
 		if i >= 0 and i <= 35:
 			# Zona izquierda
 			res[0] += values[i]
@@ -111,7 +109,7 @@ def getLaserValues():
 			# Zona derecha
 			res[9] += values[i]
 
-	for i in range(0, 9)
+	for i in range(0,9):
 		res[i] = res[i]/36
 
 	resfinal = [res[2], res[1], res[0], res[9], res[8]]
