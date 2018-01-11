@@ -4,10 +4,8 @@ import sys
 import serial
 import time
 from multiprocessing import Process, Queue
-import http_viewer
 import math
 import random
-import matplotlib.pyplot as plt
 
 ###################### !!! W A R N I N G !!! ########################
 # Each group working in the same robot has to chose a different port.
@@ -79,7 +77,6 @@ def getLaserValues():
 	res[9] = values[324]
 
 	for i in range(0,359):
-        plt.scatter(i, values[i])
 		if i >= 0 and i <= 35:
 			# Zona izquierda
 			if values[i] < res[0] and values[i] != 0:
@@ -182,11 +179,6 @@ if __name__ == "__main__":
 
 	r_queue = Queue()
 	l_queue = Queue()
-	viewer = http_viewer.HttpViewer(port_web_server, l_queue, r_queue)
-	print "To open the viewer go to: http:\\\\192.168.100.1:" + str(port_web_server)
-	print "To see the log run in a shell the next comnnad: 'tail -f log.txt'"
-	print "Press 'Q' to stop the execution."
-
 	# Open the Serial Port.
 	global ser
 	ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=0.05)
@@ -223,6 +215,5 @@ if __name__ == "__main__":
 		# Close the Serial Port.
 		ser.close()
 		print "Final"
-		viewer.quit()
 	except KeyboardInterrupt:
-		viewer.quit()
+		print "Final"
