@@ -14,30 +14,30 @@ port_web_server = int(sys.argv[1])
 
 
 def set(message, timeInMs):
-    #print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
-    ser.write(message+'\r'+'\n');
-    time.sleep(abs(timeInMs/1000));
+	#print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
+	ser.write(message+'\r'+'\n');
+	time.sleep(abs(timeInMs/1000));
 
 def get(message):
-    #print "GET - Message: %s" %message;
-    ser.write(message+'\r'+'\n');
+	#print "GET - Message: %s" %message;
+	ser.write(message+'\r'+'\n');
 
 def getLDS():
-    set('SetLDSRotation On', 1500);
-    get('GetLDSScan');
+	set('SetLDSRotation On', 1500);
+	get('GetLDSScan');
 
-    LDS_data = [];
-    while ser.inWaiting()>0:
-        line = ser.readline();
-        line_split = line.split(",");
-        if (len(line_split) == 4 and line_split[0].isdigit()):
-            #Array ['AngleInDegrees', 'DistInMM', 'errorCode']
-            line_content = [line_split[0], line_split[1], line_split[3]];
-            LDS_data.append(line_content);
+	LDS_data = [];
+	while ser.inWaiting()>0:
+		line = ser.readline();
+		line_split = line.split(",");
+		if (len(line_split) == 4 and line_split[0].isdigit()):
+			#Array ['AngleInDegrees', 'DistInMM', 'errorCode']
+			line_content = [line_split[0], line_split[1], line_split[3]];
+			LDS_data.append(line_content);
 
-    set('SetLDSRotation Off', 100);
+	set('SetLDSRotation Off', 100);
 
-    return LDS_data;
+	return LDS_data;
 
 def getLaserValues(sensor):
 	global speed
@@ -119,7 +119,7 @@ def getLaserValues(sensor):
 	return res[sensor]
 
 	#leftMotor.setVelocity(initialVelocity - (centralRightSensorValue + outerRightSensorValue) / 2)
-    #rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
+	#rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
 
 
 if __name__ == "__main__":
@@ -135,27 +135,8 @@ if __name__ == "__main__":
 
 	try:
 
-		#Acercarse al muro
-		while getLaserValues(0) > 60:
-			envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
-
-		#Girar para tener el muro a la derecha
-		while getLaserValues(8) > 40:
-			envia(ser, 'SetMotor LWheelDist 0 RWheelDist 180 Speed 100')
-		while True:
-			#cerca del muro
-			if getLaserValues(8) < 30:
-				envia(ser, 'SetMotor LWheelDist 0 RWheelDist 100 Speed 100')
-				time.sleep(0.1)
-	        #lejos el muro
-			elif getLaserValues(8) > 30:
-				envia(ser, 'SetMotor LWheelDist 100 RWheelDist 0 Speed 100')
-				time.sleep(0.1)
-			envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
-		
-
-
-		envia(ser, 'TestMode Off', 0.2)
+		while (True):
+			getLaserValues(0)
 
 		# Close the Serial Port.
 		ser.close()

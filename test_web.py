@@ -4,6 +4,7 @@ import sys
 import serial
 import time
 from multiprocessing import Process, Queue
+import http_viewer
 import math
 import random
 
@@ -17,30 +18,30 @@ suma_theta=0
 
 
 def set(message, timeInMs):
-    #print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
-    ser.write(message+'\r'+'\n');
-    time.sleep(abs(timeInMs/1000));
-
+	#print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
+	ser.write(message+'\r'+'\n');
+	time.sleep(abs(timeInMs/1000));
+		
 def get(message):
-    #print "GET - Message: %s" %message;
-    ser.write(message+'\r'+'\n');
+	#print "GET - Message: %s" %message;
+	ser.write(message+'\r'+'\n');
 
 def getLDS():
-    set('SetLDSRotation On', 1500);
-    get('GetLDSScan');
-
-    LDS_data = [];
-    while ser.inWaiting()>0:
-        line = ser.readline();
-        line_split = line.split(",");
-        if (len(line_split) == 4 and line_split[0].isdigit()):
-            #Array ['AngleInDegrees', 'DistInMM', 'errorCode']
-            line_content = [line_split[0], line_split[1], line_split[3]];
-            LDS_data.append(line_content);
-
-    set('SetLDSRotation Off', 100);
-
-    return LDS_data;
+	set('SetLDSRotation On', 1500);
+	get('GetLDSScan');
+	
+	LDS_data = [];
+	while ser.inWaiting()>0:
+		line = ser.readline();
+		line_split = line.split(",");
+		if (len(line_split) == 4 and line_split[0].isdigit()):
+			#Array ['AngleInDegrees', 'DistInMM', 'errorCode']
+			line_content = [line_split[0], line_split[1], line_split[3]];
+			LDS_data.append(line_content);
+	
+	set('SetLDSRotation Off', 100);
+   
+	return LDS_data;
 
 
 def get_motors():
@@ -56,7 +57,6 @@ def get_motors():
 
 def getLaserValues():
 	global speed
-	global difDestino
 	res = [2000,2000,2000,2000,2000,2000,2000,2000,2000,2000]
 	msg = getLDS()
 	values = [2000 for num in range(360)]
@@ -118,7 +118,7 @@ def getLaserValues():
 			if values[i] < res[9] and values[i] != 0:
 				res[9] = values[i]
 
-
+	
 
 	resfinal = [res[2], res[1], res[0], res[9], res[8]]
 	print(resfinal)
@@ -133,25 +133,18 @@ def getLaserValues():
 	distInicial = 200
 
 	speed = 300
-	if difDestino == 0 :
-		r = random.randrange(2)
-	elif difDestino > 0:
-		r = 0
-	elif difDestino < 0:
-		r = 1
-
+	r = random.randrange(2)
 	distL = distInicial - (200 - (res[8]+res[9])/2) - (200 - res[0]) * r
 	distR = distInicial - (200 - (res[2]+res[1])/2) - (200 - res[0]) * (1-r)
 
 	distL = distL * speed / 100
 	distR = distR * speed / 100
-	difDestino = difDestino + distL - distR
 	print('SetMotor LWheelDist '+ str(distL) +' RWheelDist ' + str(distR) + ' Speed ' + str(speed))
 	envia(ser, 'SetMotor LWheelDist '+ str(distL) +' RWheelDist ' + str(distR) + ' Speed ' + str(speed))
 	return res
 
 	#leftMotor.setVelocity(initialVelocity - (centralRightSensorValue + outerRightSensorValue) / 2)
-    #rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
+	#rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
 
 def odometry(L, R):
 	global x
@@ -179,6 +172,11 @@ if __name__ == "__main__":
 
 	r_queue = Queue()
 	l_queue = Queue()
+	viewer = http_viewer.HttpViewer(port_web_server, l_queue, r_queue)
+	print "To open the viewer go to: http:\\\\192.168.100.1:" + str(port_web_server)
+	print "To see the log run in a shell the next comnnad: 'tail -f log.txt'"
+	print "Press 'Q' to stop the execution."
+
 	# Open the Serial Port.
 	global ser
 	ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=0.05)
@@ -193,7 +191,7 @@ if __name__ == "__main__":
 
 	suma_theta = 0
 	x = y = 0
-	difDestino = 0
+
 	#envia(ser, 'SetMotor LWheelDist '+ str(100) +' RWheelDist ' + str(100) + ' Speed ' + str(speed))
 
 	try:
@@ -215,5 +213,6 @@ if __name__ == "__main__":
 		# Close the Serial Port.
 		ser.close()
 		print "Final"
+		viewer.quit()
 	except KeyboardInterrupt:
-		print "Final"
+		viewer.quit()
