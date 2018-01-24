@@ -61,27 +61,34 @@ if __name__ == "__main__":
 
 	try:
 
+		var = get_5sensor(get_laser())
 		#Acercarse al muro
-		while get_5sensor(0) > 60:
+		while var(0) > 60:
 			envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
+			var = get_5sensor(get_laser())
 
 		#Girar para tener el muro a la derecha
-		while get_5sensor(8) > 40:
+		while var(8) > 40:
 			envia(ser, 'SetMotor LWheelDist 0 RWheelDist 180 Speed 100')
+			var = get_5sensor(get_laser())
+
 		while True:
 			#muro delante
-			if (get_5sensor(0)<30)
+			if (var(0)<30)
 				envia(ser, 'SetMotor LWheelDist 0 RWheelDist 'perimeterRobot' Speed 100')
 				time.sleep(0.1)
 			#cerca del muro
-			if get_5sensor(8) < 30:
+			if var(8) < 30:
 				envia(ser, 'SetMotor LWheelDist 0 RWheelDist 100 Speed 100')
 				time.sleep(0.1)
 	        #lejos el muro
-			elif get_5sensor(8) > 30:
+			elif var(8) > 30:
 				envia(ser, 'SetMotor LWheelDist 100 RWheelDist 0 Speed 100')
 				time.sleep(0.1)
-			envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
+			else
+				envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
+
+			var = get_5sensor(get_laser())
 		
 
 
