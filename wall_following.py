@@ -39,9 +39,10 @@ def getLDS():
 
     return LDS_data;
 
-def getLaserValues(sensor):
+def getLaserValues():
 	global speed
 	global difDestino
+	global resfinal
 	res = [2000,2000,2000,2000,2000,2000,2000,2000,2000,2000]
 	msg = getLDS()
 	values = [2000 for num in range(360)]
@@ -105,18 +106,17 @@ def getLaserValues(sensor):
 
 
 
-	resfinal = [res[2], res[1], res[0], res[9], res[8]]
-	print(resfinal)
-
+	
 	res[0]=res[0]/10
 	res[1]=res[1]/10
 	res[2]=res[2]/10
 	res[8]=res[8]/10
 	res[9]=res[9]/10
 
-	print(res)
-	print res[sensor]
-	return res[sensor]
+	resfinal = [res[2], res[1], res[0], res[9], res[8]]
+	print(resfinal)
+	
+	return resfinal
 
 	#leftMotor.setVelocity(initialVelocity - (centralRightSensorValue + outerRightSensorValue) / 2)
     #rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
@@ -134,25 +134,31 @@ if __name__ == "__main__":
 	envia(ser ,'SetMotor RWheelEnable LWheelEnable')
 
 	try:
-
 		#Acercarse al muro
-		while getLaserValues(0) > 60:
+		getLaserValues()
+		while resfinal[2] > 60:
 			envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
+			getLaserValues()
 
 		#Girar para tener el muro a la derecha
-		while getLaserValues(8) > 40:
+		while resfinal[4] > 40:
 			envia(ser, 'SetMotor LWheelDist 0 RWheelDist 180 Speed 100')
+			getLaserValues()
 		while True:
+			#muro delante
+			if resfinal[2] < 50:
+				envia(ser, 'SetMotor LWheelDist 0 RWheelDist 180 Speed 100')
 			#cerca del muro
-			if getLaserValues(8) < 30:
-				envia(ser, 'SetMotor LWheelDist 0 RWheelDist 100 Speed 100')
-				time.sleep(0.1)
-	        #lejos el muro
-			elif getLaserValues(8) > 30:
-				envia(ser, 'SetMotor LWheelDist 100 RWheelDist 0 Speed 100')
-				time.sleep(0.1)
-			envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
-		
+			elif resfinal[4] < 30:	
+				envia(ser, 'SetMotor LWheelDist 30 RWheelDist 70 Speed 100')
+	        #lejos del muro
+			elif resfinal[4] > 40:
+				envia(ser, 'SetMotor LWheelDist 70 RWheelDist 30 Speed 100')
+			else:
+				correccion = 85 + (resfinal[3] - resfinal[4])
+				print(str(correccion))
+				envia(ser, 'SetMotor LWheelDist ' + str(correccion) + ' RWheelDist 100 Speed 50')
+			getLaserValues()		
 
 
 		envia(ser, 'TestMode Off', 0.2)
