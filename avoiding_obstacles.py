@@ -15,30 +15,30 @@ port_web_server = int(sys.argv[1])
 
 
 def set(message, timeInMs):
-    #print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
-    ser.write(message+'\r'+'\n');
-    time.sleep(abs(timeInMs/1000));
-        
+	#print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
+	ser.write(message+'\r'+'\n');
+	time.sleep(abs(timeInMs/1000));
+		
 def get(message):
-    #print "GET - Message: %s" %message;
-    ser.write(message+'\r'+'\n');
+	#print "GET - Message: %s" %message;
+	ser.write(message+'\r'+'\n');
 
 def getLDS():
-    set('SetLDSRotation On', 1500);
-    get('GetLDSScan');
-    
-    LDS_data = [];
-    while ser.inWaiting()>0:
-        line = ser.readline();
-        line_split = line.split(",");
-        if (len(line_split) == 4 and line_split[0].isdigit()):
-            #Array ['AngleInDegrees', 'DistInMM', 'errorCode']
-            line_content = [line_split[0], line_split[1], line_split[3]];
-            LDS_data.append(line_content);
-    
-    set('SetLDSRotation Off', 100);
+	set('SetLDSRotation On', 1500);
+	get('GetLDSScan');
+	
+	LDS_data = [];
+	while ser.inWaiting()>0:
+		line = ser.readline();
+		line_split = line.split(",");
+		if (len(line_split) == 4 and line_split[0].isdigit()):
+			#Array ['AngleInDegrees', 'DistInMM', 'errorCode']
+			line_content = [line_split[0], line_split[1], line_split[3]];
+			LDS_data.append(line_content);
+	
+	set('SetLDSRotation Off', 100);
    
-    return LDS_data;
+	return LDS_data;
 
 
 def get_motors():
@@ -141,7 +141,7 @@ def getLaserValues():
 	return res
 
 	#leftMotor.setVelocity(initialVelocity - (centralRightSensorValue + outerRightSensorValue) / 2)
-    #rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
+	#rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
 
 if __name__ == "__main__":
 
