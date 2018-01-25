@@ -9,10 +9,6 @@ import math
 import numpy
 import random
 
-###################### !!! W A R N I N G !!! ########################
-# Each group working in the same robot has to chose a different port.
-port_web_server = int(sys.argv[1])
-#####################################################################
 x=0
 y=0
 suma_theta=0
@@ -53,7 +49,7 @@ def odometry(L, R):
 	R_ini = R
 
 	delta_d = (new_R+new_L)/2
-	delta_th = (new_R-new_L)/243
+	delta_th = (new_R-new_L)/24.3
 	suma_theta = (suma_theta+delta_th)
 	suma_theta = numpy.mod(suma_theta,2*math.pi)
 	dx = delta_d*math.cos(suma_theta)
@@ -63,18 +59,22 @@ def odometry(L, R):
 	return [x,y,suma_theta]
 
 def driveTo(X, Y):
+	print('====================')
 	L, R = get_motors()
 	Odo = odometry(L,R)
 	time.sleep(0.1)
+	print('inside 1 '+str(Odo[2]))
 	DistX = X - Odo[0]
 	DistY = Y - Odo[1]
 	difAngle = numpy.arctan2(DistY,DistX)
 	if Odo[2] - difAngle > 2*math.pi - (Odo[2] - difAngle):
 		NewTheta = -(2*math.pi - (Odo[2] - difAngle))
+		print('inside 1 '+str(NewTheta))
 	else: 
 		NewTheta = Odo[2] - difAngle
+		print('inside 2 '+str(NewTheta))
 
-	envia(ser, 'SetMotor LWheelDist '+ str(NewTheta*121.5) +' RWheelDist ' + str(-NewTheta*121.5) + ' Speed ' + str(100))
+	envia(ser, 'SetMotor LWheelDist '+ str(NewTheta*121.5) +' RWheelDist ' + str(-NewTheta*121.5) + ' Speed 120')
 	L, R = get_motors()
 	PostOdo = odometry(L, R)
 	time.sleep(0.1)
@@ -87,7 +87,7 @@ def driveTo(X, Y):
 		time.sleep(0.1)
 
 	Dist = numpy.sqrt(DistX*DistX + DistY*DistY)
-	envia(ser, 'SetMotor LWheelDist '+ str(Dist) +' RwheelDist ' + str(Dist) + ' Speed ' + str(200))
+	envia(ser, 'SetMotor LWheelDist '+ str(Dist) +' RwheelDist ' + str(Dist) + ' Speed 120')
         L, R = get_motors()
         PostOdo = odometry(L, R)
         time.sleep(0.1)
@@ -100,14 +100,6 @@ def driveTo(X, Y):
             time.sleep(0.1)
 
 if __name__ == "__main__":
-
-	r_queue = Queue()
-	l_queue = Queue()
-	viewer = http_viewer.HttpViewer(port_web_server, l_queue, r_queue)
-	print "To open the viewer go to: http:\\\\192.168.100.1:" + str(port_web_server)
-	print "To see the log run in a shell the next comnnad: 'tail -f log.txt'"
-	print "Press 'Q' to stop the execution."
-
 	# Open the Serial Port.
 	global ser
 	ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=0.05)
@@ -118,22 +110,19 @@ if __name__ == "__main__":
 	envia(ser ,'SetMotor RWheelEnable LWheelEnable')
 
 	global L_ini, R_ini
-	L_ini, R_ini = get_motors()
+	
 
 	suma_theta = 0
 	x = y = 0
 
 	try:
 		i = 0
-		L, R = get_motors()
-		r_queue.put([(-L/40.0, i), (100,100)])
-		l_queue.put([(-R/40.0, i), (200,100)])
-		driveTo(500, 500)
+		L_ini, R_ini = get_motors()
+		driveTo(-500, 0)
 		envia(ser, 'TestMode Off', 0.2)
 
 		# Close the Serial Port.
 		ser.close()
 		print "Final"
-		viewer.quit()
 	except KeyboardInterrupt:
-		viewer.quit()
+		print "KeyboardInterrupt"
