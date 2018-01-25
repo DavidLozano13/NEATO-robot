@@ -23,21 +23,12 @@ def get(message):
     ser.write(message+'\r'+'\n');
 
 def getLDS():
-    set('SetLDSRotation On', 1500);
-    get('GetLDSScan');
-
-    LDS_data = [];
-    while ser.inWaiting()>0:
-        line = ser.readline();
-        line_split = line.split(",");
-        if (len(line_split) == 4 and line_split[0].isdigit()):
-            #Array ['AngleInDegrees', 'DistInMM', 'errorCode']
-            line_content = [line_split[0], line_split[1], line_split[3]];
-            LDS_data.append(line_content);
-
-    set('SetLDSRotation Off', 100);
-
-    return LDS_data;
+	res = envia(ser, 'GetLDSScan',0.2,False)
+	var = []
+	for line in res.split('\r\n')[2:362]:
+		l = line.split(',')
+		var.append([l[0], l[1], l[2], l[3]])
+	return var
 
 def getLaserValues():
 	global speed
@@ -130,6 +121,8 @@ if __name__ == "__main__":
 
 	envia(ser ,'SetMotor RWheelEnable LWheelEnable')
 
+	envia(ser, 'SetLDSRotation On',0.2,False)
+
 	try:
 		#Acercarse al muro
 		getLaserValues()
@@ -194,4 +187,5 @@ if __name__ == "__main__":
 		ser.close()
 		print "Final"
 	except KeyboardInterrupt:
+		envia(ser, 'SetLDSRotation Off',0.2,False)
 		print "Final"
