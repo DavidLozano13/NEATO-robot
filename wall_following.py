@@ -104,9 +104,6 @@ def getLaserValues():
 			if values[i] < res[9] and values[i] != 0:
 				res[9] = values[i]
 
-
-
-	
 	res[0]=res[0]/10
 	res[1]=res[1]/10
 	res[2]=res[2]/10
@@ -137,30 +134,60 @@ if __name__ == "__main__":
 		#Acercarse al muro
 		getLaserValues()
 		while resfinal[2] > 60:
-			envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
-			getLaserValues()
-
-		#Girar para tener el muro a la derecha
-		while resfinal[4] > 40:
-			envia(ser, 'SetMotor LWheelDist 0 RWheelDist 180 Speed 100')
-			getLaserValues()
-		while True:
-			#muro delante
-			if resfinal[2] < 50:
-				envia(ser, 'SetMotor LWheelDist 0 RWheelDist 180 Speed 100')
-			#cerca del muro
-			elif resfinal[4] < 30:	
-				envia(ser, 'SetMotor LWheelDist 30 RWheelDist 70 Speed 100')
-	        #lejos del muro
-			elif resfinal[4] > 40:
-				envia(ser, 'SetMotor LWheelDist 70 RWheelDist 30 Speed 100')
+			if resfinal[2] < 100:
+				envia(ser, 'SetMotor LWheelDist 100 RWheelDist 100 Speed 50')
 			else:
-				correccion = 85 + (resfinal[3] - resfinal[4])
-				print(str(correccion))
-				envia(ser, 'SetMotor LWheelDist ' + str(correccion) + ' RWheelDist 100 Speed 50')
-			getLaserValues()		
-
-
+				envia(ser, 'SetMotor LWheelDist 200 RWheelDist 200 Speed 100')			
+			getLaserValues()
+		
+		#Girar para tener el muro a la derecha
+		if resfinal[0] >= resfinal[4]:
+			while resfinal[4] > 40:
+				envia(ser, 'SetMotor LWheelDist 0 RWheelDist 180 Speed 100')
+				getLaserValues()
+			while True:
+				#muro delante
+				if resfinal[2] < 50:
+					envia(ser, 'SetMotor LWheelDist 0 RWheelDist 180 Speed 100')
+				#cerca del muro
+				elif resfinal[4] < 30:	
+					envia(ser, 'SetMotor LWheelDist 20 RWheelDist 50 Speed 50')
+		        #lejos del muro
+				elif resfinal[4] > 40:
+					envia(ser, 'SetMotor LWheelDist 50 RWheelDist 20 Speed 50')
+				else:
+					correccion = (resfinal[3] - resfinal[4])
+					print(str(correccion))
+					if resfinal[2] < 100:
+						envia(ser, 'SetMotor LWheelDist ' + str(85 + correccion) + ' RWheelDist 100 Speed 50')
+					else:
+						envia(ser, 'SetMotor LWheelDist ' + str(185 + correccion) + ' RWheelDist 200 Speed 100')
+						
+				getLaserValues()
+		#Girar para tener el muro a la izquierda
+		else:
+			while resfinal[0] > 40:
+				envia(ser, 'SetMotor LWheelDist 180 RWheelDist 0 Speed 100')
+				getLaserValues()
+			while True:
+				#muro delante
+				if resfinal[2] < 50:
+					envia(ser, 'SetMotor LWheelDist 180 RWheelDist 0 Speed 100')
+				#cerca del muro
+				elif resfinal[0] < 30:	
+					envia(ser, 'SetMotor LWheelDist 50 RWheelDist 20 Speed 50')
+		        #lejos del muro
+				elif resfinal[0] > 40:
+					envia(ser, 'SetMotor LWheelDist 20 RWheelDist 50 Speed 50')
+				else:
+					correccion = (resfinal[1] - resfinal[0])
+					print(str(correccion))
+					if resfinal[2] < 100:
+						envia(ser, 'SetMotor LWheelDist 100 RWheelDist ' + str(85 + correccion) + ' Speed 50')
+					else:
+						envia(ser, 'SetMotor LWheelDist 200 RWheelDist ' + str(185 + correccion) + ' Speed 100')
+				getLaserValues()
+			
 		envia(ser, 'TestMode Off', 0.2)
 
 		# Close the Serial Port.
