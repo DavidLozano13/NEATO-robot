@@ -4,15 +4,8 @@ import sys
 import serial
 import time
 from multiprocessing import Process, Queue
-import http_viewer
 import math
 import random
-
-###################### !!! W A R N I N G !!! ########################
-# Each group working in the same robot has to chose a different port.
-port_web_server = int(sys.argv[1])
-#####################################################################
-
 
 def set(message, timeInMs):
 	#print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
@@ -24,21 +17,12 @@ def get(message):
 	ser.write(message+'\r'+'\n');
 
 def getLDS():
-	set('SetLDSRotation On', 1500);
-	get('GetLDSScan');
-	
-	LDS_data = [];
-	while ser.inWaiting()>0:
-		line = ser.readline();
-		line_split = line.split(",");
-		if (len(line_split) == 4 and line_split[0].isdigit()):
-			#Array ['AngleInDegrees', 'DistInMM', 'errorCode']
-			line_content = [line_split[0], line_split[1], line_split[3]];
-			LDS_data.append(line_content);
-	
-	set('SetLDSRotation Off', 100);
-   
-	return LDS_data;
+	msg = envia(ser, 'GetLDSScan',0.2,False)
+	var = []
+	for line in msg.split('\r\n')[2:362]:
+		s = line.split(',')
+		var.append([s[0], s[1], s[2], s[3]])
+	return var
 
 
 def get_motors():
@@ -115,8 +99,6 @@ def getLaserValues():
 			if values[i] < res[9] and values[i] != 0:
 				res[9] = values[i]
 
-	
-
 	resfinal = [res[2], res[1], res[0], res[9], res[8]]
 	print(resfinal)
 
@@ -130,9 +112,8 @@ def getLaserValues():
 	distInicial = 200
 
 	speed = 300
-	r = random.randrange(2)
-	distL = distInicial - (200 - (res[8]+res[9])/2) - (200 - res[0]) * r
-	distR = distInicial - (200 - (res[2]+res[1])/2) - (200 - res[0]) * (1-r)
+	distL = distInicial - (200 - (res[8]+res[9])/2) - (200 - res[0])
+	distR = distInicial - (200 - (res[2]+res[1])/2) - (200 - res[0])
 
 	distL = distL * speed / 100
 	distR = distR * speed / 100
@@ -140,17 +121,7 @@ def getLaserValues():
 	envia(ser, 'SetMotor LWheelDist '+ str(distL) +' RWheelDist ' + str(distR) + ' Speed ' + str(speed))
 	return res
 
-	#leftMotor.setVelocity(initialVelocity - (centralRightSensorValue + outerRightSensorValue) / 2)
-	#rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
-
 if __name__ == "__main__":
-
-	r_queue = Queue()
-	l_queue = Queue()
-	viewer = http_viewer.HttpViewer(port_web_server, l_queue, r_queue)
-	print "To open the viewer go to: http:\\\\192.168.100.1:" + str(port_web_server)
-	print "To see the log run in a shell the next comnnad: 'tail -f log.txt'"
-	print "Press 'Q' to stop the execution."
 
 	# Open the Serial Port.
 	global ser
@@ -160,24 +131,21 @@ if __name__ == "__main__":
 	envia(ser, 'PlaySound 1')
 
 	envia(ser ,'SetMotor RWheelEnable LWheelEnable')
+	envia(ser, 'SetLDSRotation On',0.2,False)
 
 	#envia(ser, 'SetMotor LWheelDist '+ str(100) +' RWheelDist ' + str(100) + ' Speed ' + str(speed))
 
 	try:
-		i = 0
 		L, R = get_motors()
 		while True:
 			getLaserValues()
-
 			time.sleep(0.1)
-			i+=60
-
 
 		envia(ser, 'TestMode Off', 0.2)
 
 		# Close the Serial Port.
 		ser.close()
 		print "Final"
-		viewer.quit()
 	except KeyboardInterrupt:
-		viewer.quit()
+		envia(ser, 'SetLDSRotation Off',0.2,False)
+		print "keyboardInterrupt"

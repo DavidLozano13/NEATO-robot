@@ -7,11 +7,6 @@ from multiprocessing import Process, Queue
 import math
 import random
 
-###################### !!! W A R N I N G !!! ########################
-# Each group working in the same robot has to chose a different port.
-port_web_server = int(sys.argv[1])
-#####################################################################
-
 def set(message, timeInMs):
     #print "SET - Message: %s, SleepTimeInMs: %f" %(message, timeInMs);
     ser.write(message+'\r'+'\n');
@@ -22,33 +17,12 @@ def get(message):
     ser.write(message+'\r'+'\n');
 
 def getLDS():
-    set('SetLDSRotation On', 1500);
-    get('GetLDSScan');
-
-    LDS_data = [];
-    while ser.inWaiting()>0:
-        line = ser.readline();
-        line_split = line.split(",");
-        if (len(line_split) == 4 and line_split[0].isdigit()):
-            #Array ['AngleInDegrees', 'DistInMM', 'errorCode']
-            line_content = [line_split[0], line_split[1], line_split[3]];
-            LDS_data.append(line_content);
-
-    set('SetLDSRotation Off', 100);
-
-    return LDS_data;
-
-
-def get_motors():
-	""" Ask to the robot for the current state of the motors. """
-	msg = envia(ser, 'GetMotors LeftWheel RightWheel').split('\n')
-
-	# For better understanding see the neato commands PDF.
-
-	L = int(msg[4].split(',')[1])
-	R = int(msg[8].split(',')[1])
-
-	return (L, R)
+	msg = envia(ser, 'GetLDSScan',0.2,False)
+	var = []
+	for line in msg.split('\r\n')[2:362]:
+		s = line.split(',')
+		var.append([s[0], s[1], s[2], s[3]])
+	return var
 
 def getLaserValues():
 	global speed
@@ -114,40 +88,39 @@ def getLaserValues():
 			if values[i] < res[9] and values[i] != 0:
 				res[9] = values[i]
 
-
-
-	resfinal = [res[2], res[1], res[0], res[9], res[8]]
-	print(resfinal)
-
 	res[0]=res[0]/10
 	res[1]=res[1]/10
 	res[2]=res[2]/10
 	res[8]=res[8]/10
 	res[9]=res[9]/10
 
-	print(res)
 	distInicial = 200
 
-	speed = 300
-	if difDestino == 0 :
-		r = random.randrange(2)
-	elif difDestino > 0:
-		r = 0
+	distL = distInicial - (distInicial - (res[8]+res[9])/2) - (distInicial - res[0])
+	distR = distInicial - (distInicial - (res[2]+res[1])/2) - (distInicial - res[0])
+	
+	print('=============================')
+	print('diferencia: '+str(difDestino))
+	speed = 150
+	if difDestino > 0:
+		print('deberia girar a la izquierda')
+		if (res[1] > 50 and res[2] > 20):
+			distR = distR * 1.25
+			distL = distL * 0.75
+			print('puedo girar a la izquierda!')
 	elif difDestino < 0:
-		r = 1
-
-	distL = distInicial - (200 - (res[8]+res[9])/2) - (200 - res[0]) * r
-	distR = distInicial - (200 - (res[2]+res[1])/2) - (200 - res[0]) * (1-r)
-
+		print('deberia girar a la derecha')
+		if (res[9] > 50 and res[8] > 20):
+			distL = distL * 1.25
+			distR = distR * 0.75
+			print('puedo girar a la derecha!')
+	
 	distL = distL * speed / 100
 	distR = distR * speed / 100
 	difDestino = difDestino + distL - distR
-	print('SetMotor LWheelDist '+ str(distL) +' RWheelDist ' + str(distR) + ' Speed ' + str(speed))
+	#print('SetMotor LWheelDist '+ str(distL) +' RWheelDist ' + str(distR) + ' Speed ' + str(speed))
 	envia(ser, 'SetMotor LWheelDist '+ str(distL) +' RWheelDist ' + str(distR) + ' Speed ' + str(speed))
 	return res
-
-	#leftMotor.setVelocity(initialVelocity - (centralRightSensorValue + outerRightSensorValue) / 2)
-    #rightMotor.setVelocity(initialVelocity - (centralLeftSensorValue + outerLeftSensorValue) / 2 - centralSensorValue)
 
 if __name__ == "__main__":
 
@@ -161,19 +134,15 @@ if __name__ == "__main__":
 	envia(ser, 'PlaySound 1')
 
 	envia(ser ,'SetMotor RWheelEnable LWheelEnable')
+	envia(ser, 'SetLDSRotation On',0.2,False)
 
 	difDestino = 0
 	#envia(ser, 'SetMotor LWheelDist '+ str(100) +' RWheelDist ' + str(100) + ' Speed ' + str(speed))
 
 	try:
-		i = 0
-		L, R = get_motors()
 		while True:
 			getLaserValues()
-
 			time.sleep(0.1)
-			i+=60
-
 
 		envia(ser, 'TestMode Off', 0.2)
 
@@ -181,4 +150,5 @@ if __name__ == "__main__":
 		ser.close()
 		print "Final"
 	except KeyboardInterrupt:
+		envia(ser, 'SetLDSRotation Off',0.2,False)
 		print "Final"
